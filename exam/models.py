@@ -4,8 +4,10 @@ import uuid
 
 User = get_user_model()
 
+def generate_token():
+    return str(uuid.uuid4())
+
 class Exam(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
@@ -18,9 +20,9 @@ class Exam(models.Model):
 
 
 class ExamAccessToken(models.Model):
-    token = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     exam = models.ForeignKey(Exam, on_delete=models.PROTECT)
     student = models.ForeignKey(User, on_delete=models.PROTECT)
+    token = models.CharField(max_length=36, unique=True, default=generate_token, editable=False)
     is_used = models.BooleanField(default=False)
     valid_from = models.DateTimeField()
     valid_until = models.DateTimeField()
