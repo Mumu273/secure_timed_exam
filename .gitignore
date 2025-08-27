@@ -1,6 +1,9 @@
 # PyCharm files
 .idea/
 
+#git files
+.git
+
 
 #*.txt
 # Virtual environment
@@ -12,6 +15,7 @@ env
 
 # Environment variables file
 .env
+env_example
 
 # Python packages
 *.pyc
