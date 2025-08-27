@@ -11,20 +11,20 @@ class CustomUserAdmin(DefaultUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('first_name', 'last_name', 'email', 'password1', 'password2', 'is_staff'),
+            'fields': ('first_name', 'last_name', 'username', 'email', 'password1', 'password2', 'is_staff'),
         }),
     )
 
     # Show only these fields in the edit form
     fieldsets = (
-        (None, {'fields': ('first_name', 'last_name', 'email', 'password', 'is_staff')}),
+        (None, {'fields': ('first_name', 'last_name', 'username', 'email', 'password', 'is_staff')}),
     )
 
     # Columns to display in user list
     list_display = ('id', 'email', 'first_name', 'last_name', 'is_staff')
 
     # Make email the unique identifier
-    ordering = ('email',)
+    ordering = ('username',)
 
 
 # Unregister the default User admin
