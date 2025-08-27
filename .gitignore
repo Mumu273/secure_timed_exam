@@ -1,0 +1,35 @@
+# PyCharm files
+.idea/
+
+
+#*.txt
+# Virtual environment
+venv/
+env
+
+# Django migrations
+#*/migrations/
+
+# Environment variables file
+.env
+
+# Python packages
+*.pyc
+__pycache__/
+
+# Static files
+static/collect_static
+
+# Media files
+media
+
+# logger file
+requests.log
+
+db
+
+docker-compose
+
+Dockerfile
+
+entrypoint
