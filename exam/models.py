@@ -22,7 +22,7 @@ class Exam(models.Model):
 class ExamAccessToken(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.PROTECT)
     student = models.ForeignKey(User, on_delete=models.PROTECT)
-    token = models.CharField(max_length=36, unique=True, default=generate_token, editable=False)
+    token = models.CharField(max_length=36, unique=True)
     is_used = models.BooleanField(default=False)
     valid_from = models.DateTimeField()
     valid_until = models.DateTimeField()
