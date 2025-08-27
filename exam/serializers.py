@@ -20,7 +20,7 @@ class TokenValidateSerializer(serializers.ModelSerializer):
     exam = serializers.SerializerMethodField()
 
     def get_student(self, obj):
-        user = User.objects.filter(id=obj.student).first()
+        user = User.objects.filter(id=obj.student.id).first()
         data = {
             "name": f"{user.first_name} {user.last_name}",
             "email": user.email
@@ -28,7 +28,7 @@ class TokenValidateSerializer(serializers.ModelSerializer):
         return data
 
     def get_exam(self, obj):
-        exam = Exam.objects.filter(id=obj.exam).first()
+        exam = Exam.objects.filter(id=obj.exam.id).first()
         data = {
             "title": exam.title,
             "start_time": exam.start_time,
