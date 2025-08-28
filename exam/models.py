@@ -4,9 +4,6 @@ import uuid
 
 User = get_user_model()
 
-def generate_token():
-    return str(uuid.uuid4())
-
 class Exam(models.Model):
     title = models.CharField(max_length=255)
     start_time = models.DateTimeField()
