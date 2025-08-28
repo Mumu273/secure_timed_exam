@@ -4,12 +4,15 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
+
 from .models import *
 from .serializers import *
 from .models import ExamAccessToken
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from django.utils import timezone
 from rest_framework.permissions import AllowAny
+from external.generate_token import generate_token
+from external.validate_token import token_validation
 
 class ExamAccessTokenAPIView(viewsets.ViewSet):
     permission_classes = [AllowAny]
@@ -20,8 +23,8 @@ class ExamAccessTokenAPIView(viewsets.ViewSet):
             OpenApiExample(
                 "Generate Token",
                 value={
-                    "student_id": "float",
-                    "valid_minutes": "float",
+                    "student_id": 0,
+                    "valid_minutes": 0,
                 },
                 request_only=True,
             )
@@ -32,6 +35,8 @@ class ExamAccessTokenAPIView(viewsets.ViewSet):
         if not request.user.is_staff:
             return Response({"detail": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
         request_data = request.data
+        if request_data['valid_minutes'] < 0:
+            return Response({"detail": "Invalid input"}, status=status.HTTP_400_BAD_REQUEST)
         user = User.objects.filter(id=request_data['student_id']).first()
         exam = Exam.objects.filter(id=kwargs['exam_id']).first()
         if not (user and exam):
@@ -58,16 +63,11 @@ class ExamAccessTokenAPIView(viewsets.ViewSet):
     def validate_token(self, request, *args, **kwargs):
         status_code = status.HTTP_403_FORBIDDEN
         token = ExamAccessToken.objects.filter(token=kwargs['token']).first()
-        if not token:
-            return Response({"detail": "Invalid token"}, status=status_code)
 
-        now = timezone.now()
+        validate_token = token_validation(token)
 
-        if not token.valid_from <= now < token.valid_until:
-            return Response({"detail": "This access link has expired"}, status=status_code)
-
-        if token.is_used:
-            return Response({"detail": "Token already used"}, status=status_code)
+        if not validate_token['is_valid']:
+            return Response({"detail": validate_token["detail"]}, status=status_code)
 
         token.is_used = True
         token.save()
