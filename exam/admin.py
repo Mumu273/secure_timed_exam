@@ -27,13 +27,13 @@ class CustomUserAdmin(DefaultUserAdmin):
     ordering = ('username',)
 
 
-# Unregister the default User admin
 admin.site.unregister(User)
-# Register your custom User admin
 admin.site.register(User, CustomUserAdmin)
 
 
-
+class ExamAccessTokenAdmin(admin.ModelAdmin):
+    list_display = ('token', 'exam', 'is_used', 'valid_until', 'created_at')
+    list_filter = ('is_used', 'valid_until', 'exam')
 
 admin.site.register(Exam)
-admin.site.register(ExamAccessToken)
+admin.site.register(ExamAccessToken, ExamAccessTokenAdmin)
