@@ -13,9 +13,24 @@ from django.utils import timezone
 from rest_framework.permissions import AllowAny
 from external.generate_token import generate_token
 from external.validate_token import token_validation
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+from .tasks import send_email_with_token
+
+class CustomUserThrottle(UserRateThrottle):
+    rate = '5/minute'
+
+class CustomAnonThrottle(AnonRateThrottle):
+    rate = '3/minute'
+
 
 class ExamAccessTokenAPIView(viewsets.ViewSet):
     permission_classes = [AllowAny]
+
+    def get_throttles(self):
+        if self.action == 'validate_token':
+            return [CustomUserThrottle(), CustomAnonThrottle()]
+        return super().get_throttles()
+
 
     @extend_schema(
         request=GenerateExamAccessTokenSerializer,
@@ -59,7 +74,19 @@ class ExamAccessTokenAPIView(viewsets.ViewSet):
             return Response({"token": serializer.validated_data['token'], "message": "Token Generated Successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
 
-
+    @extend_schema(
+        request=TokenValidateSerializer,
+        examples=[
+            OpenApiExample(
+                "Validate Token",
+                value={
+                    "student": 0,
+                    "exam": 0,
+                },
+                request_only=True,
+            )
+        ],
+    )
     def validate_token(self, request, *args, **kwargs):
         status_code = status.HTTP_403_FORBIDDEN
         token = ExamAccessToken.objects.filter(token=kwargs['token']).first()
@@ -68,6 +95,12 @@ class ExamAccessTokenAPIView(viewsets.ViewSet):
 
         if not validate_token['is_valid']:
             return Response({"detail": validate_token["detail"]}, status=status_code)
+
+        email = token.student.email
+        email_token = kwargs["token"]
+        exam = token.exam.title
+        send_email_with_token.delay(email, email_token, exam)
+
 
         token.is_used = True
         token.save()
